@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Screenshot App</title>
+</head>
+<body>
+  <div id="content">
+    <h1>Page Content</h1>
+    <p>Capture this page as a screenshot!</p>
+  </div>
+  <button id="next">Next Page</button>
+  <button id="screenshot">Take Screenshot</button>
+
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+  <script>
+    document.getElementById('screenshot').addEventListener('click', () => {
+      html2canvas(document.body).then(canvas => {
+        const link = document.createElement('a');
+        link.download = 'screenshot.png';
+        link.href = canvas.toDataURL();
+        link.click();
+      });
+    });
+
+    document.getElementById('next').addEventListener('click', () => {
+      // Replace with logic to navigate to the next page
+      alert('Navigate to the next page');
+    });
+  </script>
+</body>
+</html>
