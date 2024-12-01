@@ -3,30 +3,40 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Screenshot App</title>
+  <title>Full Screen Screenshot</title>
 </head>
 <body>
-  <div id="content">
-    <h1>Page Content</h1>
-    <p>Capture this page as a screenshot!</p>
-  </div>
-  <button id="next">Next Page</button>
-  <button id="screenshot">Take Screenshot</button>
+  <button id="capture">Take Full-Screen Screenshot</button>
+  <video id="preview" autoplay style="display:none;"></video>
+  <canvas id="canvas" style="display:none;"></canvas>
 
-  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
   <script>
-    document.getElementById('screenshot').addEventListener('click', () => {
-      html2canvas(document.body).then(canvas => {
-        const link = document.createElement('a');
-        link.download = 'screenshot.png';
-        link.href = canvas.toDataURL();
-        link.click();
-      });
-    });
+    document.getElementById('capture').addEventListener('click', async () => {
+      try {
+        const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+        const video = document.createElement('video');
+        video.srcObject = stream;
 
-    document.getElementById('next').addEventListener('click', () => {
-      // Replace with logic to navigate to the next page
-      alert('Navigate to the next page');
+        video.onloadedmetadata = async () => {
+          video.play();
+          const canvas = document.createElement('canvas');
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          const context = canvas.getContext('2d');
+          context.drawImage(video, 0, 0, canvas.width, canvas.height);
+          
+          // Stop the video stream to free resources
+          stream.getTracks().forEach(track => track.stop());
+
+          // Save the screenshot
+          const link = document.createElement('a');
+          link.download = 'screenshot.png';
+          link.href = canvas.toDataURL();
+          link.click();
+        };
+      } catch (err) {
+        console.error('Error capturing screen:', err);
+      }
     });
   </script>
 </body>
