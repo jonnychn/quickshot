@@ -3,17 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Full Screen Screenshot</title>
+  <title>Screen Capture App</title>
 </head>
 <body>
-  <button id="capture">Take Full-Screen Screenshot</button>
-  <video id="preview" autoplay style="display:none;"></video>
-  <canvas id="canvas" style="display:none;"></canvas>
-
+  <h1>Screen Capture App</h1>
+  <button id="fullScreen">Capture Full Screen</button>
+  <button id="selectScreen">Select Screen to Capture</button>
+  <button id="autoCapture">Start Auto-Capture Every 3 Seconds</button>
+  <button id="stopAutoCapture" style="display: none;">Stop Auto-Capture</button>
+  
   <script>
-    document.getElementById('capture').addEventListener('click', async () => {
+    let autoCaptureInterval;
+
+    async function captureScreen(auto = false) {
       try {
-        const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+        const stream = await navigator.mediaDevices.getDisplayMedia({ video: { displaySurface: auto ? "monitor" : "application" } });
         const video = document.createElement('video');
         video.srcObject = stream;
 
@@ -24,19 +28,43 @@
           canvas.height = video.videoHeight;
           const context = canvas.getContext('2d');
           context.drawImage(video, 0, 0, canvas.width, canvas.height);
-          
+
           // Stop the video stream to free resources
           stream.getTracks().forEach(track => track.stop());
 
           // Save the screenshot
           const link = document.createElement('a');
-          link.download = 'screenshot.png';
+          link.download = `screenshot-${Date.now()}.png`;
           link.href = canvas.toDataURL();
           link.click();
         };
       } catch (err) {
         console.error('Error capturing screen:', err);
       }
+    }
+
+    document.getElementById('fullScreen').addEventListener('click', () => {
+      captureScreen(true); // Full-screen mode
+    });
+
+    document.getElementById('selectScreen').addEventListener('click', () => {
+      captureScreen(false); // Select screen mode
+    });
+
+    document.getElementById('autoCapture').addEventListener('click', async () => {
+      document.getElementById('stopAutoCapture').style.display = 'inline-block';
+      document.getElementById('autoCapture').disabled = true;
+      
+      autoCaptureInterval = setInterval(() => {
+        captureScreen(true); // Capture full screen every 3 seconds
+      }, 3000);
+    });
+
+    document.getElementById('stopAutoCapture').addEventListener('click', () => {
+      clearInterval(autoCaptureInterval);
+      document.getElementById('stopAutoCapture').style.display = 'none';
+      document.getElementById('autoCapture').disabled = false;
+      alert('Auto-capture stopped.');
     });
   </script>
 </body>
